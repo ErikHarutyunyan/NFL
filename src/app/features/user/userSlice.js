@@ -5,14 +5,14 @@ import TokenService from "../../../service/token.service"
 
 const userToken = TokenService.getLocalAccessToken() || null
 const userInfo = TokenService.getUser() || null
-
+const successFlag = userInfo?.id ? true : false
 const initialState = {
   loading: false,
   userInfo,
   userToken,
   error: null,
-  success: userInfo?.id ? true : false,
-  logout:false
+  success: successFlag,
+  logout: false,
 };
 
 const userSlice = createSlice({

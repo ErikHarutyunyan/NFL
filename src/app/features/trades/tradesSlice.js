@@ -20,6 +20,10 @@ const initialState = {
   historyTrades: [],
   tradePlayerYears: [],
   manualTrade: false,
+  randomFlag:false,
+  randomAccepted: false,
+  tradeRandomId : [],
+  tradeRandomCount:0,
 
 
 };
@@ -90,8 +94,20 @@ export const tradesSlice = createSlice({
   name: "trades",
   initialState,
   reducers: {
+    setTradeRandomCount: (state, action) => {
+      state.tradeRandomCount = action.payload;
+    },
+    setTradeRandomId: (state, action) => {
+      state.tradeRandomId = action.payload;
+    },
+    setRandomAccepted: (state, action) => {
+      state.randomAccepted = action.payload;
+    },
     setAcceptTrade: (state, action) => {
       state.acceptTrade = action.payload;
+    },
+    setRandomFlag: (state, action) => {
+      state.randomFlag = action.payload;
     },
     setNotAccept: (state, action) => {
       state.notAccept = action.payload;
@@ -132,19 +148,19 @@ export const tradesSlice = createSlice({
     setChangeTrades: (state, action) => {
       state.changeTrades = action.payload;
     },
-    setManualTrade: (state,action) => {
-      state.manualTrade = action.payload
+    setManualTrade: (state, action) => {
+      state.manualTrade = action.payload;
     },
     setTradePlayerYears: (state, action) => {
       state.tradePlayerYears = action.payload;
     },
-    setTradeValueTrade: (state,action) => {
-      state.tradeValue = action.payload
+    setTradeValueTrade: (state, action) => {
+      state.tradeValue = action.payload;
     },
-    setReserveTradeValue: (state,action) => {
-      state.reserveTradeValue = action.payload
+    setReserveTradeValue: (state, action) => {
+      state.reserveTradeValue = action.payload;
     },
-    setResetSelectTeam: (state,_) => {
+    setResetSelectTeam: (state, _) => {
       state.myTeam = initialState.myTeam;
       state.mainTeam = initialState.mainTeam;
       state.mainTeams = initialState.mainTeams;
@@ -152,7 +168,6 @@ export const tradesSlice = createSlice({
     },
 
     setResetTrades: (state, _) => {
-
       state.myTeam = initialState.myTeam;
       state.mainTeam = initialState.mainTeam;
       state.mainTeams = initialState.mainTeams;
@@ -170,6 +185,10 @@ export const tradesSlice = createSlice({
       state.historyTrades = initialState.historyTrades;
       state.tradePlayerYears = initialState.tradePlayerYears;
       state.manualTrade = initialState.manualTrade;
+      state.randomFlag = initialState.randomFlag;
+      state.randomAccepted = initialState.randomAccepted;
+      state.tradeRandomId = initialState.tradeRandomId;
+      state.tradeRandomCount = initialState.tradeRandomCount;
     },
   },
   extraReducers: {
@@ -200,6 +219,9 @@ export const tradesSlice = createSlice({
 export const selectTrades = (state) => state.trades;
 
 export const {
+  setTradeRandomId,
+  setRandomAccepted,
+  setRandomFlag,
   setAcceptTrade,
   setNotAccept,
   setAcceptCount,
@@ -220,6 +242,7 @@ export const {
   setTradeValueTrade,
   setReserveTradeValue,
   setResetSelectTeam,
+  setTradeRandomCount,
 } = tradesSlice.actions;
 
 // Action Creator

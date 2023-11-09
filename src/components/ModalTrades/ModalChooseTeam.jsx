@@ -6,6 +6,7 @@ import MySelectTeam from '../MySelect/MySelectTeam';
 import { ModalBodyItem, PickItem, PickItems } from './ModalTrades.styles';
 
 const ModalChooseTeam = ({title='',team={},tradesTeams=[],teamSelect=[],path=''}) => {
+
   const dispatch = useDispatch();
   return (
     <ModalBodyItem>

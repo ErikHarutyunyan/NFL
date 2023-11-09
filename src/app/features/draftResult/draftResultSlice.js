@@ -41,7 +41,7 @@ export const { setDraftResult, setRoundTeam, setTeamsName, setTeamsPlayer, resDr
 export const setDraftResultAction = (teams, teamSelect, round, teamPickIndexControl, draftRandomnessTeam) => (dispatch, getState) => {
 
   const {draftConfig: {fanaticChallenge,fanaticMode}} = getState()
-  debugger
+  
   const setRound = []
   const teamsSelectName = teamSelect.map(item => item.name)
   const teamsPlayer = {}

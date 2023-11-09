@@ -1,5 +1,5 @@
 import { Switch } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import Title from "../../components/Title/Title";
 import Box from "@mui/material/Box";
 import Slider from "@mui/material/Slider";
@@ -24,12 +24,17 @@ import {
   setTimeSpeed,
   setFanaticModeValue,
   fanaticModeAction,
+  setTradingSimulatorAction,
+  setTradingSimulator,
+  resetTeam,
 } from "../../app/features/draftConfig/draftConfigSlice";
 import { CheckBoxInputSecond } from "../Inputs/CheckBoxInputSecond";
 import arrowLeft from "../../assets/img/arrow-left.png";
 import Button from "../Buttons/Button";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+
+import { setChangeTrades } from "../../app/features/trades/tradesSlice";
 import { selectUser } from "../../app/features/user/userSlice";
 
 const Settings = ({ teamSelect }) => {
@@ -47,15 +52,47 @@ const Settings = ({ teamSelect }) => {
     fanaticChallenge,
     fanaticMode,
     fanaticModeValue,
+    tradingSimulatorAction,
+    tradingSimulator,
+    changeTrades,
+    allowSimulator,
   } = useSelector(selectDraftConfig);
 
+  
   const roundsArray = Array.from(Array(7).keys());
+  const [maxSimSim,setMaxSimSim] = useState(8);
+
+  useEffect(() => {
+    if (tradingSimulatorAction) {
+      let teamSelection = teamSelect[0]?.selection;
+
+      if (teamSelection > 8 || round === 2) {
+        setMaxSimSim(8);
+        return;
+      }
+      if (teamSelection <= 8) {
+        setMaxSimSim(teamSelection - 1);
+        return;
+      } else {
+        setMaxSimSim(8);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tradingSimulatorAction, teamSelect, round]);
 
   useEffect(() => {
     dispatch(setDraftRandomness(draftRandomness));
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect(() => {
+   if(round > 2 && tradingSimulatorAction) {
+    dispatch(setTradingSimulator(1));
+    dispatch(setTradingSimulatorAction(!tradingSimulatorAction));
+   }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [round]);
 
   return (
     <>
@@ -271,6 +308,51 @@ const Settings = ({ teamSelect }) => {
                   <SettingMarks>
                     <span>Less (2)</span>
                     <span>More (8)</span>
+                  </SettingMarks>
+                </Box>
+              </div>
+            )}
+            {/* ------ */}
+            {allowSimulator || userInfo?.allow_simulator ? (
+              <div className="setting-fan-item">
+                <p>
+                  Allow trading simulator to simulator <br />
+                  <span style={{ fontSize: "13px" }}>
+                    Please choose the team after selecting an option
+                  </span>
+                </p>
+                <Switch
+                  checked={tradingSimulatorAction}
+                
+                  onChange={(e) => {
+                    dispatch(
+                      setTradingSimulatorAction(!tradingSimulatorAction)
+                    );
+                    dispatch(resetTeam());
+                    dispatch(setChangeTrades(!changeTrades));
+                  }}
+                />
+              </div>
+            ) : null}
+
+            {tradingSimulatorAction && (
+              <div className="setting-fan-item">
+                <Box sx={{ width: "100%" }}>
+                  <Slider
+                    step={1}
+                    min={1}
+                    max={maxSimSim}
+                    value={tradingSimulator}
+                    defaultValue={1}
+                    onChange={(e) =>
+                      dispatch(setTradingSimulator(e.target.value))
+                    }
+                    aria-label="Default"
+                    valueLabelDisplay="auto"
+                  />
+                  <SettingMarks>
+                    <span>Less (1)</span>
+                    <span>More ({maxSimSim})</span>
                   </SettingMarks>
                 </Box>
               </div>

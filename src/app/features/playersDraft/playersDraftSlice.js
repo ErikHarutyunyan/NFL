@@ -2,6 +2,7 @@ import axios from "axios";
 import { createSlice } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { API_ENDPOINT } from "../../../config/config";
+import { setTeamUniqPosition } from "../draftConfig/draftConfigSlice";
 
 const initialState = {
   loading: false,
@@ -44,6 +45,7 @@ export const getPlayersDraft = createAsyncThunk(
           iterationSection,
           countRender,
           fanaticMode,
+          
         },
       } = getState();
       const resData = { ...res.data };
@@ -61,7 +63,7 @@ export const getPlayersDraft = createAsyncThunk(
         
         if (playerManualFlag) {
           
-          console.log('playerManualFilter :', playerManualFilter);
+          
           playerManualFilter = playerManualChoose.filter(
             (item) => !(item.roundTeam < fanaticChallenge[0].mode)
           );
@@ -75,7 +77,6 @@ export const getPlayersDraft = createAsyncThunk(
           (player) => !playerChooseId.includes(player.id)
         );
         // if (resData.results.length === 0) {
-        //   debugger;
         // }
         resData.results = resDataResult.map((item, idx) => {
           return { ...item, bpa: idx + 1 };
@@ -92,6 +93,7 @@ export const getPlayersDraft = createAsyncThunk(
         if (playerManualFlag) {
           dispatch(setPlayerIterationChoose([]));
           dispatch(setPlayerManualChooseNew(playerManualFilter));
+          dispatch(setTeamUniqPosition({}));
         }
         let playerIteration = [...playerReset, ...playerManualFilter];
         const playerChooseId = playerIteration.map((el) => el.id);
@@ -110,7 +112,7 @@ export const getPlayersDraft = createAsyncThunk(
           (player) => !playerChooseId.includes(player.id)
         );
         // if (resData.results.length === 0) {
-        //   debugger;
+
         // }
         resData.results = resDataResult.map((item, idx) => {
           return { ...item, bpa: idx + 1 };
@@ -121,7 +123,7 @@ export const getPlayersDraft = createAsyncThunk(
         });
       }
       // if (resData.results.length === 0) {
-      //   debugger;
+
       // }
       dispatch(setPlayersDraft(resData));
     } catch (error) {

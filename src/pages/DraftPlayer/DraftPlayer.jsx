@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -39,9 +39,12 @@ import {
 import {
   getTrades,
   selectTrades,
+  setTradeRandomCount,
+  setTradeRandomId,
   
 } from "../../app/features/trades/tradesSlice";
 import PlayersSelected from "../../components/PlayersSelected/PlayersSelected";
+import { resetSimSim } from "../../app/features/simulatorToSimulator/simulatorToSimulatorSlice";
 
 const DraftPlayer = () => {
   const {
@@ -59,9 +62,11 @@ const DraftPlayer = () => {
     fanaticIndexPosition,
     fanaticMode,
     iterationSection,
+    tradingSimulatorAction,
   } = useSelector(selectDraftConfig);
 
-  const { tradesTeams, changeTrades } = useSelector(selectTrades);
+  const { tradesTeams, changeTrades, tradeRandomId, randomAccepted } =
+    useSelector(selectTrades);
 
 
   const dispatch = useDispatch();
@@ -80,7 +85,6 @@ const DraftPlayer = () => {
   }, [countRender, tradeValue.mouthing]);
 
   useEffect(() => {
-   
     if (
       (tradeValue.mouthing && countRender < teamPickIndex[0]) ||
       countRender < fanaticIndexPosition[0] ||
@@ -90,8 +94,9 @@ const DraftPlayer = () => {
     ) {
       let modalFlag = ((fanaticChallenge.length && !changeTrades) || fanaticMode) ? 1 : changeTrades
       if (modalFlag) {
+       
         const team = tradeValue.results[countRender];
-        
+      
         const teamName = team.round.name;
         const teamPosition = team["index_position"] ?? 0;
         let teamManual = teamSelect.some((item) => item.name === teamName);
@@ -106,15 +111,13 @@ const DraftPlayer = () => {
           ? draftCardDepth + team.index + manualLength
           : PLAYER_MAX;
         }
-          
-
-          dispatch(
-            getPlayersDraft({
-              playerCountGet: playerCountGet,
-              teamName,
-            })
-          );
-        // }
+        dispatch(
+          getPlayersDraft({
+            playerCountGet: playerCountGet,
+            teamName,
+          })
+        );
+        
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -135,6 +138,7 @@ const DraftPlayer = () => {
     return () => {
       dispatch(resPlayersDraft());
       dispatch(setResetRound());
+      dispatch(resetSimSim());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -208,7 +212,6 @@ const DraftPlayer = () => {
       });
       dispatch(setHistoryBoard(data));
       if (countRender === iter.at(-1)) {
-        
         dispatch(
           setDraftResultAction(
             draftPlayers,
@@ -223,7 +226,38 @@ const DraftPlayer = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [countRender]);
 
-
+   const tradeRandomIdGenerate = useCallback(
+     (id) => {
+      if(id.length > 1) {
+        const randomNumbers = [];
+        const countRandom = Math.ceil(id.length / 3);
+        while (randomNumbers.length < countRandom) {
+          const randomIndex = Math.floor(Math.random() * id.length);
+          const randomNumber = id[randomIndex];
+ 
+          if (!randomNumbers.includes(randomNumber) && randomNumber !== id.at(-1)) {
+            randomNumbers.push(randomNumber);
+          }
+        }
+        dispatch(setTradeRandomCount(countRandom));
+        dispatch(setTradeRandomId(randomNumbers));
+      }
+       // eslint-disable-next-line react-hooks/exhaustive-deps
+     },
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+     [teamPickIndex]
+   );
+  useEffect(() => {
+    if (
+      !tradingSimulatorAction && teamPickIndex.length > 0 &&
+      tradeRandomId.length === 0 &&
+      randomAccepted
+    ) {
+      tradeRandomIdGenerate(teamPickIndex);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teamPickIndex, tradeRandomId]);
+  
   if (!tradeValue.mouthing) {
     return <Spinner />;
   }
@@ -271,7 +305,7 @@ const DraftPlayer = () => {
             </>
           )}
         </DraftView>
-        {fanaticChallenge.length === 0 && !fanaticMode
+        { fanaticChallenge.length === 0 && !fanaticMode
           ? tradesTeams &&
             tradesTeams.length > 0 &&
             !changeTrades && (

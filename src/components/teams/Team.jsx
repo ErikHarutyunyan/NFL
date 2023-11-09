@@ -5,8 +5,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import { getFilterTwoData, getRandom } from "../../utils/utils";
 import { useDispatch } from 'react-redux';
-import { setDraftRandomnessTeam } from '../../app/features/draftConfig/draftConfigSlice';
+import { setDraftRandomnessTeam, setTradingSimulator, setTradingSimulatorAction } from '../../app/features/draftConfig/draftConfigSlice';
 import { AllTeams } from './Teams.styles';
+import { setRandomAccepted } from '../../app/features/trades/tradesSlice';
 
 export const Team = ({
   teams,
@@ -16,14 +17,21 @@ export const Team = ({
   fanaticChallenge,
 }) => {
   const dispatch = useDispatch();
+  
   useEffect(() => {
     if (teams.length && teamSelect.length !== 32) {
+      
       const exceptTeam = getFilterTwoData(teams, teamSelectId, "index");
       const exceptTeamId = exceptTeam.map((item) => item.index);
       const draftRandomnessTeam = getRandom(exceptTeamId, draftRandomness);
-
+      teamSelect.length === 1 ? dispatch(setRandomAccepted(true)) : dispatch(setRandomAccepted(false))
+      
       dispatch(setDraftRandomnessTeam(draftRandomnessTeam));
     }
+     if (teams.length && teamSelect.length > 1) {
+      dispatch(setTradingSimulator(1));
+      dispatch(setTradingSimulatorAction(false));
+     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teamSelectId, draftRandomness]);

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 // utils
 import { POSITIONS_COLOR } from "../../utils/constants";
 import Search from "../Search/Search";
@@ -51,10 +51,13 @@ import { ErrorBoundary } from "react-error-boundary";
 import ErrorFallBack from "../ErrorFallBack/ErrorFallBack";
 import {
   manualTradeAction,
+  selectTrades,
   setAcceptTrade,
   setChangeTrades,
+  setRandomFlag,
   setResetSelectTeam,
 } from "../../app/features/trades/tradesSlice";
+import SimulatorToSimulator from "../SimulatorToSimulator/SimulatorToSimulator";
 
 const PageSize = 10;
 const DraftPlayerChoose = ({ playersDraft, draftStatus, setThisId }) => {
@@ -68,7 +71,11 @@ const DraftPlayerChoose = ({ playersDraft, draftStatus, setThisId }) => {
     fanaticIndexPosition,
     fanaticChallenge,
     fanaticMode,
+    tradingSimulatorAction,
   } = useSelector(selectDraftConfig);
+  const { randomAccepted, tradeRandomId } = useSelector(selectTrades);
+ 
+
   const dispatch = useDispatch();
   const draftBtnDisable = draftStatus === "red" ? true : false;
   const [searchValue, setSearchValue] = useState("");
@@ -162,6 +169,7 @@ const DraftPlayerChoose = ({ playersDraft, draftStatus, setThisId }) => {
       ...playerItem,
       roundTeam: +teamItem.round_index_number,
     };
+  
 
     dispatch(delPlayersDraft([playerItemPos]));
     dispatch(setTradeValue({ ...tradeValue, results: newTradeValue }));
@@ -175,22 +183,10 @@ const DraftPlayerChoose = ({ playersDraft, draftStatus, setThisId }) => {
     let percentPlayers = [];
     const teamName = tradeValue.results[team - 1].round.name;
     const teamValue = +tradeValue.results[team - 1].value;
-
     const realValue = teamValue >= item[teamName] ? teamValue : item[teamName];
-    // if (bpa > 0 && bpa < 11) {
     const pricentValue = percentPick(realValue, item[teamName]);
     let playerItemsSlice = playersDraft.results.slice(0, 10);
     playerItemsSlice.push(playerItem);
-
-    // for (let i = 0; i < playersDraft.results.length; ++i) {
-    //   if (playersDraft.results[i].id === playerItem.id) {
-    //     playerItemsSlice.push(playersDraft.results[i]);
-    //     break;
-    //   } else {
-    //     playerItemsSlice.push(playersDraft.results[i]);
-    //   }
-    // }
-
     percentPlayers = upUsersCals(playerItemsSlice, pricentValue, teamName);
     playerItem = { ...item, [teamName]: item.value + pricentValue };
 
@@ -211,6 +207,25 @@ const DraftPlayerChoose = ({ playersDraft, draftStatus, setThisId }) => {
     // setChangeId(true);
     dispatch(setCountRender());
   };
+  const tradeAction = useCallback(() => {
+    dispatch(setChangeTrades(false));
+    dispatch(manualTradeAction({ countRender, manualTrade: true }));
+    dispatch(setResetSelectTeam());
+    dispatch(setAcceptTrade(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countRender]);
+
+  useEffect(() => {
+    if (
+      randomAccepted &&
+      tradeRandomId.length > 0 &&
+      tradeRandomId.includes(countRender+1)
+    ) {
+      tradeAction();
+      dispatch(setRandomFlag(true));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [randomAccepted, tradeRandomId,countRender]);
 
   return (
     <>
@@ -295,20 +310,11 @@ const DraftPlayerChoose = ({ playersDraft, draftStatus, setThisId }) => {
                   onChange={() => setColorShow((prev) => !prev)}
                 />
               </div>
-              {fanaticChallenge.length === 0 && !fanaticMode ? (
+              {fanaticChallenge.length === 0 &&
+              !fanaticMode &&
+              !tradingSimulatorAction ? (
                 <div className="trades-btn">
-                  <button
-                    onClick={() => {
-                      dispatch(setChangeTrades(false));
-                      dispatch(
-                        manualTradeAction({ countRender, manualTrade: true })
-                      );
-                      dispatch(setResetSelectTeam());
-                      dispatch(setAcceptTrade(false));
-                    }}
-                  >
-                    Trades
-                  </button>
+                  <button onClick={tradeAction}>Trades</button>
                 </div>
               ) : null}
             </NumWrapper>
@@ -353,7 +359,9 @@ const DraftPlayerChoose = ({ playersDraft, draftStatus, setThisId }) => {
                             <img src={infoImg} alt="info" />
                             <button
                               className="player-td player-draft-btn"
-                              disabled={draftBtnDisable}
+                              disabled={
+                                draftBtnDisable
+                              }
                               onClick={() => playerChoose(item, item?.bpa)}
                             >
                               Draft
@@ -391,6 +399,8 @@ const DraftPlayerChoose = ({ playersDraft, draftStatus, setThisId }) => {
               )}
             </DraftPlayerWrapper>
           </Wrapper>
+          {tradingSimulatorAction ? <SimulatorToSimulator />: null}
+          
         </ErrorBoundary>
       )}
     </>

@@ -30,6 +30,23 @@ export const getHistoryBoard = createAsyncThunk(
   }
 );
 
+export const getSetting = createAsyncThunk(
+  "draftConfig/getSetting",
+  async (_, { dispatch, rejectWithValue }) => {
+    try {
+      const res = await axios.get(`${API_ENDPOINT}user/settings/`);
+      
+      return res.data.results[0];
+    } catch (error) {
+      if (error.response && error.response.data.message) {
+        return rejectWithValue(error.response.data.message);
+      } else {
+        return rejectWithValue(error.message);
+      }
+    }
+  }
+);
+
 export const getTeams = createAsyncThunk(
   "draftConfig/getTeams",
   async (_, { dispatch, rejectWithValue }) => {

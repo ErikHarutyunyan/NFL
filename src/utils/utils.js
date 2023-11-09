@@ -304,3 +304,23 @@ export const loadImage = (src) => {
     img.src = src;
   });
 };
+
+
+export const generateID  = function (count=8) {
+console.log('count :', count);
+
+  return (Date.now().toString(36) + Math.random().toString(36).substr(2))
+    .toUpperCase()
+    .slice(count);
+};
+
+
+export const formatDate = (value) => {
+    const date = new Date(value);
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };

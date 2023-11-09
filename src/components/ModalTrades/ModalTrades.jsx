@@ -15,8 +15,12 @@ import {
   setAcceptCount,
   setAcceptTrade,
   setChangeTrades,
+  setMainTeam,
   setManualTrade,
+  setMyTeam,
   setNotAccept,
+  setRandomAccepted,
+  setRandomFlag,
   setTeamTradeValue,
   teamAddPicks,
   teamMountAction,
@@ -40,28 +44,32 @@ import changeTeamPick from "./modalTradesFunc";
 import { objectDeleteValue } from "../../utils/utils";
 import ModalChooseTeam from "./ModalChooseTeam";
 import ModalResultTeam from "./ModalResultTeam";
+import randomTrade from "./randomAlgoritm";
 
 const ModalTrades = ({ tradesTeams, teamSelect }) => {
-  const { teamPickIndex } = useSelector(selectDraftConfig);
+
+  const { teamPickIndex,countRender } = useSelector(selectDraftConfig);
   const {
     tradeValue,
     mainTeam,
-    myTeam,
     mainTeams,
+    myTeam,
     myTeams,
     acceptCount,
     notAccept,
     acceptTrade,
     historyTrades,
     changeTrades,
-    manualTrade,
-    reserveTradeValue,
+    // manualTrade,
+    // reserveTradeValue,
+    randomFlag,
   } = useSelector(selectTrades);
 
-  const {tradeValue:tradeValueResults} = useSelector(selectDraftConfig)
+  const { tradeValue: tradeValueResults } = useSelector(selectDraftConfig);
 
   const [open, setOpen] = useState(!changeTrades);
   const [openFlag, seOpenFlag] = useState(!changeTrades);
+  const [randomBool, setRandomBool] = useState(false)
 
   const dispatch = useDispatch();
   const handleClose = () => {
@@ -69,16 +77,36 @@ const ModalTrades = ({ tradesTeams, teamSelect }) => {
     dispatch(setChangeTrades(true));
     seOpenFlag(false);
     dispatch(setManualTrade(false));
+    if(randomFlag) {
+      dispatch(setRandomFlag(false))
+       dispatch(setRandomAccepted(false));
+    }
   };
 
   useEffect(() => {
+    if(randomFlag) {
+      let randomBool = true
+      while (randomBool) {
+        const randomIndex = Math.floor(Math.random() * tradesTeams.length);
+        if(teamSelect[0].id !== tradesTeams[randomIndex].id) {
+          randomBool = false
+          dispatch(
+            teamMountAction({
+              team: tradesTeams[randomIndex],
+              path: "mainTeam",
+            })
+          );
+          dispatch(teamMountAction({ team: teamSelect[0], path: "myTeam" }));
+          return;
+        }
+      }
+    }
     dispatch(teamMountAction({ team: tradesTeams[0], path: "mainTeam" }));
     dispatch(teamMountAction({ team: teamSelect[0], path: "myTeam" }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    
     const mainTeamData = mainTeams?.filter(
       (item) => item.name === mainTeam.name
     );
@@ -114,41 +142,42 @@ const ModalTrades = ({ tradesTeams, teamSelect }) => {
   }, [mainTeam?.name, tradeValue]);
 
   useEffect(() => {
-    
-    const myTeamData = myTeams?.filter((item) => item.name === myTeam.name);
-    if (myTeam?.name && tradeValue.length) {
-      if (!myTeamData.length) {
-        const myTeamAllInfo = tradeValue.filter(
-          (item) => item.round.name === myTeam.name
-        );
-        const picks = myTeamAllInfo.map((item) => {
-          return { pick: item.pick, value: item.value, index: item.index };
-        });
-        const picksYears = myTeamAllInfo.map((item) => {
-          return {
-            round: `R${item.round_index_number}`,
-            id: item.id,
-            value: item.value,
-          };
-        });
-        dispatch(
-          teamAddPicks({
-            picksInfo: { picks, picksYears, pick: [], pickYear: [] },
-            path: "myTeam",
-          })
-        );
-        dispatch(getTradesPlayer({ id: myTeam.id, path: "myTeam" }));
-      } else {
-        dispatch(teamMountAction({ team: myTeamData[0], path: "myTeam" }));
+    // if (!randomFlag) {
+      const myTeamData = myTeams?.filter((item) => item.name === myTeam.name);
+      if (myTeam?.name && tradeValue.length) {
+        if (!myTeamData.length) {
+          const myTeamAllInfo = tradeValue.filter(
+            (item) => item.round.name === myTeam.name
+          );
+          const picks = myTeamAllInfo.map((item) => {
+            return { pick: item.pick, value: item.value, index: item.index };
+          });
+          const picksYears = myTeamAllInfo.map((item) => {
+            return {
+              round: `R${item.round_index_number}`,
+              id: item.id,
+              value: item.value,
+            };
+          });
+          dispatch(
+            teamAddPicks({
+              picksInfo: { picks, picksYears, pick: [], pickYear: [] },
+              path: "myTeam",
+            })
+          );
+          dispatch(getTradesPlayer({ id: myTeam.id, path: "myTeam" }));
+        } else {
+          dispatch(teamMountAction({ team: myTeamData[0], path: "myTeam" }));
+        }
       }
-    }
+    // }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myTeam.name, tradeValue]);
 
   const changeAccept = useMemo(
     () =>
       ({ myTeam, mainTeam }) => {
-        
         const mainTeamPickValue = mainTeam.pick.reduce((acc, item) => {
           return acc + parseInt(item.value);
         }, 0);
@@ -175,7 +204,8 @@ const ModalTrades = ({ tradesTeams, teamSelect }) => {
     []
   );
   const changeTeam = () => {
-    const acceptFlag = changeAccept({ myTeam, mainTeam });
+    
+    const acceptFlag = !randomBool ? changeAccept({ myTeam, mainTeam }) : true;
     if (acceptFlag) {
       let teamMainFind = tradeValue.find(
         (item) => item.round.name === mainTeam.name
@@ -203,7 +233,10 @@ const ModalTrades = ({ tradesTeams, teamSelect }) => {
           "pick",
         ],
       });
-      const tradeValueData = manualTrade ? tradeValueResults.results : tradeValue;
+      
+      const tradeOldValue = [...tradeValueResults.results].splice(0,countRender+1);
+      const tradeValueData = [...tradeOldValue, ...tradeValue];
+      
       const newTradesValue = changeTeamPick({
         teamPick: mainTeam.pick.map((item) => item.index),
         myTeamPick: myTeam.pick.map((item) => item.index),
@@ -218,7 +251,11 @@ const ModalTrades = ({ tradesTeams, teamSelect }) => {
           (item) => !newTradesValue.myTeamPickIndex.includes(item)
         ),
       ];
-      newTradePickIndex.sort((a, b) => a - b);
+      
+      newTradePickIndex = newTradePickIndex
+        .sort((a, b) => a - b)
+        .filter((pick) => tradeValueResults.count >= pick );
+
       dispatch(setTeamTradeValue(newTradesValue.tradeValue));
       dispatch(changeTradeTeam(newTradesValue.tradeValue));
       dispatch(setTeamPickIndex(newTradePickIndex));
@@ -236,6 +273,23 @@ const ModalTrades = ({ tradesTeams, teamSelect }) => {
     dispatch(setAcceptCount(10));
     dispatch(setNotAccept(false));
   };
+
+  useEffect(() => {
+
+    if (
+      Object.keys(mainTeam).length >= 12 &&
+      Object.keys(myTeam).length >= 12 &&
+      myTeam.pick.length === 0 &&
+      randomFlag
+    ) {
+      const randomTeam = randomTrade({ mainTeam, myTeam });
+      dispatch(setMyTeam(randomTeam[0].myTeam));
+      dispatch(setMainTeam(randomTeam[0].mainTeam));
+      setRandomBool(true)
+      
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myTeam, mainTeam]);
   return (
     <>
       {openFlag && (
@@ -279,10 +333,14 @@ const ModalTrades = ({ tradesTeams, teamSelect }) => {
 
                 <BtnWrap>
                   {acceptCount !== 0 ? (
-                    <button onClick={() => changeTeam()}>Offer Trade</button>
+                    <button onClick={() => changeTeam()}>
+                      {randomFlag ? "Accept" : "Offer Trade"}
+                    </button>
                   ) : null}
 
-                  <button onClick={handleClose}>Start Draft</button>
+                  <button onClick={handleClose}>
+                    {randomFlag ? "Reject" : "Start Draft"}
+                  </button>
                 </BtnWrap>
               </ModalBody>
             )}
@@ -293,11 +351,11 @@ const ModalTrades = ({ tradesTeams, teamSelect }) => {
                 </ModalStatus>
                 <ModalBodyItems>
                   <ModalResultTeam
-                    title={'Team to trade with'}
+                    title={"Team to trade with"}
                     historyTrades={historyTrades}
                     mainTeam={mainTeam}
                     myTeam={myTeam}
-                    name={'myTeam'}
+                    name={"myTeam"}
                   />
                   <ModalBodyItem>
                     <div className="line" />

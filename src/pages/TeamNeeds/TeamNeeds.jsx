@@ -19,7 +19,6 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getTeamNeeds,
-  resTeamNeeds,
   selectTeamNeeds,
 } from "../../app/features/teamNeeds/teamNeedsSlice";
 import { searchInfo } from "../../utils/utils";
@@ -33,7 +32,7 @@ import {
 const TeamNeeds = () => {
   const [expanded, setExpanded] = useState(false);
   const dispatch = useDispatch();
-  const { teamNeeds,loading } = useSelector(selectTeamNeeds);
+  const { teamNeeds } = useSelector(selectTeamNeeds);
   const { teams, tradeValue } = useSelector(selectDraftConfig);
 
   const initial = useRef(true);

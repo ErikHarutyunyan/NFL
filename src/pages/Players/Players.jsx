@@ -37,6 +37,7 @@ const Players = () => {
   const initial = useRef(true);
   const dispatch = useDispatch();
   const players = useSelector(selectPlayers);
+  console.log('players :', players);
   const groups = useSelector(selectGroup);
 
   const [searchValue, setSearchValue] = useState("");

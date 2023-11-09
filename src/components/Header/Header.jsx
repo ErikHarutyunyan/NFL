@@ -42,7 +42,7 @@ function Header() {
                 ) : (
                   <>
                     <ProfileInfo>
-                      <Link to={"/profile"}>
+                      <Link to={"/profile/info"}>
                         <img
                           src={profileImg}
                           alt="profile"

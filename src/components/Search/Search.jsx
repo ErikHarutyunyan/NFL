@@ -6,7 +6,7 @@ const Search = ({placeholder="Search", icon="",value,handleChange}) => {
   return (
     <InputWrap>
       <label><SearchIcon /></label>
-      <input value={value} placeholder={placeholder} onChange={handleChange}/> 
+      <input type="text" value={value} placeholder={placeholder} onChange={handleChange}/> 
     </InputWrap>
   )
 }

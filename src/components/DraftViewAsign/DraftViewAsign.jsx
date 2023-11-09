@@ -60,6 +60,7 @@ const DraftViewAsign = ({ players, thisId }) => {
     fanaticChallenge,
     advancedSetting,
     teamUniqPosition,
+    tradingSimulatorAction,
     fanaticMode
   } = useSelector(selectDraftConfig);
   const divRef = useRef(null);
@@ -83,7 +84,7 @@ const DraftViewAsign = ({ players, thisId }) => {
         let tradeValueTeam = structuredClone(tradeValue.results[countRender]);
         let fanaticFlag = false;
         let teamDepth = [];
-
+        
         const playersAll = players.results;
         let player = {};
         let roundIndexBool = false;
@@ -115,7 +116,7 @@ const DraftViewAsign = ({ players, thisId }) => {
             (item) => item.pick === tradeValueTeam["pick"]
           )[0];
         } else {
-          player = draftAutoSettings(
+          player = draftAutoSettings({
             draftCardDepth,
             draftRandomnessTeam,
             roundBPA,
@@ -126,8 +127,9 @@ const DraftViewAsign = ({ players, thisId }) => {
             tradeValueTeam,
             selectCardDepth,
             roundIndexBool,
-            roundIndex
-          );
+            roundIndex,
+            teamUniqPosition,
+          });
         }
         if(fanaticMode) {
           
@@ -140,7 +142,7 @@ const DraftViewAsign = ({ players, thisId }) => {
             fanaticFlag = true
             
           } else {
-            player = draftAutoSettings(
+            player = draftAutoSettings({
               draftCardDepth,
               draftRandomnessTeam,
               roundBPA,
@@ -151,12 +153,20 @@ const DraftViewAsign = ({ players, thisId }) => {
               tradeValueTeam,
               selectCardDepth,
               roundIndexBool,
-              roundIndex
-            );
+              roundIndex,
+              teamUniqPosition,
+            });
           }
         }
-        debugger
+        
         const { player: playerItem, playerDepth } = player;
+        
+          dispatch(
+            uniqPosition({
+              name: tradeValueTeam.round.name,
+              position: player.player.position,
+            })
+          );
         tradeValueTeam["player"] = playerItem;
         tradeValueTeam["playerDepth"] = playerDepth;
         let newTradeValueResults = tradeValue.results.map((team) => {
@@ -193,6 +203,7 @@ const DraftViewAsign = ({ players, thisId }) => {
   }, [tradeValue.mouthing, players.loading, pauseId, players.status]);
 
   const advancingSettingsDefault = useCallback(() => {
+
     if (
       tradeValue?.mouthing &&
       !players.loading &&
@@ -201,13 +212,14 @@ const DraftViewAsign = ({ players, thisId }) => {
       (countRender + 1 < teamPickIndex[0] || !teamPickIndex.length) &&
       !pauseId.length
     ) {
+      
       let newTradeValue = {};
       let tradeValueTeam = structuredClone(tradeValue.results[countRender]);
       
       const playersAll = players.results;
-      let player = {};
+      // let player = {};
       let roundIndex = +tradeValueTeam.round_index_number;
-      player = draftDisableSettings({
+      let {player} = draftDisableSettings({
         teamUniqPosition,
         playersAll,
         tradeValueTeam,
@@ -231,7 +243,7 @@ const DraftViewAsign = ({ players, thisId }) => {
           position: player.position,
         })
       );
-      dispatch(setTradeValue(newTradeValue));
+      dispatch(setTradeValue(newTradeValue)); 
       dispatch(setDraftPlayersAction(tradeValueTeam));
       dispatch(delPlayersDraft([player], tradeValueTeam?.iteration));
       dispatch(setCountRender());
@@ -240,7 +252,8 @@ const DraftViewAsign = ({ players, thisId }) => {
   }, [tradeValue.mouthing, players.loading, pauseId, players.status]);
 
   useEffect(() => {
-    if (!advancedSetting) {
+  
+    if (!advancedSetting && !tradingSimulatorAction) {
       advancingSettings();
       return;
     }
@@ -267,6 +280,7 @@ const DraftViewAsign = ({ players, thisId }) => {
       {players.length > 0 && loading ? <CircularProgress /> : null}
       <ul ref={teamRef}>
         {tradeValue?.results?.map((team, idx) => {
+
           const {
             index: id,
             round_index: roundIndex,
@@ -274,6 +288,7 @@ const DraftViewAsign = ({ players, thisId }) => {
             round: { logo, name },
             iteration,
           } = team;
+         
 
           const checkTeam = delayTime({ id, indexPosition });
           const time = thisId ? +(id - thisId) * (1000 / timeSpeed) : checkTeam;
@@ -361,6 +376,7 @@ const DraftViewAsign = ({ players, thisId }) => {
                       )}
                     </Delayed>
                   )}
+                 
                 </div>
               </li>
             </React.Fragment>

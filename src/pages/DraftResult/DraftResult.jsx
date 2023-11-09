@@ -42,8 +42,12 @@ import {
   DraftTeam,
   DraftTeamName,
   GradeBox,
+  ImgWrap,
   MockDraftWrap,
   MySelectWrap,
+  PlayerInfo,
+  SimSimResult,
+  TeamChange,
   TradesItem,
   TradesItems,
   TradesWrap,
@@ -58,6 +62,9 @@ import ErrorFallBack from "../../components/ErrorFallBack/ErrorFallBack";
 import { selectTrades } from "../../app/features/trades/tradesSlice";
 import { POSITIONS_COLOR, TEAM_NEEDS } from "../../utils/constants";
 import Confetti from "react-confetti";
+import { selectSimulatorToSimulator } from "../../app/features/simulatorToSimulator/simulatorToSimulatorSlice";
+import { RefreshIcon } from "../../components/Icons/Icons";
+
 
 const DraftResult = () => {
   const [countGrade, setCountGrade] = useState(0)
@@ -73,6 +80,11 @@ const DraftResult = () => {
     bpa_badges,
     fanatic_mode,
   } = useSelector(selectDraftResult);
+  const { teamAllRound: simSimTeam } = useSelector(
+    selectSimulatorToSimulator
+    );
+
+
 
   const { historyTrades } = useSelector(selectTrades);
 
@@ -267,7 +279,7 @@ const DraftResult = () => {
                   teamSelect?.map((team, idx) => {
                     const round = +team?.round_index?.split(" ")[1];
                     const grading = gradingCalc(team?.player?.bpa);
-                    
+
                     return (
                       <React.Fragment key={idx}>
                         <div className="draft-result-pick-item">
@@ -327,11 +339,69 @@ const DraftResult = () => {
                   <p>OVERALL DRAFT GRADE</p>
                   <div className="draft-overall-grade">
                     {gradingMiddle(countGrade)}
-                
                   </div>
                 </div>
               </DraftResultPickFooter>
             </div>
+            <DraftResultPickWrap
+              backImg={markaImg}
+              style={{ borderRadius: "8px", padding: "30px 16px" }}
+            >
+              {simSimTeam.length
+                ? simSimTeam.map((item) => {
+                    const { pickInfo } = item;
+                    return (
+                      <div>
+                        <TeamChange key={item.id}>
+                          <ImgWrap>
+                            <img
+                              src={teamSelect[0]?.round?.logo}
+                              alt={teamSelect[0]?.round?.name}
+                            />
+                          </ImgWrap>
+                          <SimSimResult>
+                            <div className="arrow-wrap">
+                              <RefreshIcon width={30} height={"auto"} />
+                              <RefreshIcon
+                                width={30}
+                                height={"auto"}
+                                style={{ transform: "rotate(180deg)" }}
+                              />
+                            </div>
+                            <div>
+                              <PlayerInfo>
+                                <p>{item?.player?.player}</p>
+                                <p>{item?.player?.position}</p>
+                              </PlayerInfo>
+                              <div class="sim-pick">
+                                {Object.keys(pickInfo).map((item, idx) => {
+                                  return (
+                                    <>
+                                      <p>{item}</p>
+                                      <p>{pickInfo[item].join(" ")}</p>
+                                    </>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                            <div className="arrow-wrap">
+                              <RefreshIcon width={30} height={"auto"} />
+                              <RefreshIcon
+                                width={30}
+                                height={"auto"}
+                                style={{ transform: "rotate(180deg)" }}
+                              />
+                            </div>
+                          </SimSimResult>
+                          <ImgWrap>
+                            <img src={item?.logo} alt={item.tm} />
+                          </ImgWrap>
+                        </TeamChange>
+                      </div>
+                    );
+                  })
+                : null}
+            </DraftResultPickWrap>
             <div>
               <BadgesItems>
                 {bpa_badges ? (
@@ -494,10 +564,11 @@ const DraftResult = () => {
             <DraftResultFooter>www.DraftSimulator.co</DraftResultFooter>
           </DraftResultWrap>
         </DraftResultFull>
+
         {showConfetti && (
           <Confetti
             numberOfPieces={800}
-            width={window.innerWidth - 200}
+            width={window.innerWidth}
             height={window.innerHeight}
             recycle={false}
           />

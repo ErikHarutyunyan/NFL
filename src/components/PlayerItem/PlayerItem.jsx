@@ -17,7 +17,6 @@ const PlayerItem = ({player}) => {
         <Th className='player-name'>Name</Th>
         <Th className='player-possition'>Possition</Th>
         <Th className='player-college'>College</Th>
-        <Th className='player-conferance'>Conferance</Th>
         <Th className='player-rating'>Rating</Th>
       </Tr>
       </thead>
@@ -26,7 +25,6 @@ const PlayerItem = ({player}) => {
         <Td>{player?.player}</Td>
         <Td>{player?.position}</Td>
         <Td>{player?.school}</Td>
-        <Td >Lorem ipsum</Td>
         <Td>
           <span>78</span>
           <span>95</span>

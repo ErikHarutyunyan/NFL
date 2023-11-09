@@ -13,6 +13,7 @@ import {
 // images
 import infoImg from "../../assets/img/info2.png" 
 import { useState } from "react";
+import { MULTI_PLAYER_FIND, MULTI_PLAYER_JOIN_TEAM, PROFILE_DRAFT_EVENTS, PROFILE_DRAFT_EVENTS_CREATE } from "../../router/route-path";
 function SelectDraft() {
   const [infoHover,setInfoHover] = useState(false)
   const onMouseEnter = () => {
@@ -35,7 +36,7 @@ function SelectDraft() {
           <h2>Multi-Player Draft</h2>
           <MultiColumn>
             <MultiRow>
-              <Link to="#">Join Multi-User draft</Link>
+              <Link to={MULTI_PLAYER_JOIN_TEAM}>Join Multi-User draft</Link>
               <form action="">
                 <input type="number" placeholder="Enter Session Id To Join" />
                 <button type="submit">Join</button>
@@ -43,15 +44,23 @@ function SelectDraft() {
             </MultiRow>
 
             <MultiRow>
-              <Link to="#">Create Multi-User draft</Link>
+              <Link to={PROFILE_DRAFT_EVENTS_CREATE}>
+                Create Multi-User draft
+              </Link>
               <InfoDiv>
-                <img src={infoImg} alt="info" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}></img>
-                <ArrowDiv infoHover={infoHover}>Paid premium members only $29.95</ArrowDiv>
+                <img
+                  src={infoImg}
+                  alt="info"
+                  onMouseEnter={onMouseEnter}
+                  onMouseLeave={onMouseLeave}
+                ></img>
+                <ArrowDiv infoHover={infoHover}>
+                  Paid premium members only $29.95
+                </ArrowDiv>
               </InfoDiv>
             </MultiRow>
             <MultiRow>
-
-              <Link to="#">Find Multi-User drafts</Link>
+              <Link to={MULTI_PLAYER_FIND}>Find Multi-User drafts</Link>
             </MultiRow>
           </MultiColumn>
         </SelectColumn>

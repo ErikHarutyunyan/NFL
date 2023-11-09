@@ -19,7 +19,7 @@ import {
 } from "../../app/features/draftConfig/draftConfigSlice";
 import { Switch } from "@mui/material";
 import { resDraftResult } from "../../app/features/draftResult/draftResultSlice";
-import { getTeams } from "../../app/features/draftConfig/drafConfigAction";
+import { getSetting, getTeams } from "../../app/features/draftConfig/drafConfigAction";
 import { setResetTrades } from "../../app/features/trades/tradesSlice";
 // import ModalTrades from "../../components/ModalTrades/ModalTrades";
 
@@ -35,6 +35,7 @@ import { setResetTrades } from "../../app/features/trades/tradesSlice";
   useEffect(() => {
     dispatch(setResetRound());
     dispatch(getTeams());
+    dispatch(getSetting())
     dispatch(resDraftResult())
     dispatch(setResetTrades());
     // eslint-disable-next-line react-hooks/exhaustive-deps

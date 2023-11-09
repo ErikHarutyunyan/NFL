@@ -33,7 +33,11 @@ const ModalResultTeam = ({title='',historyTrades=[],mainTeam={},myTeam={},name='
               item.mainTeam.name === mainTeam.name
             ) {
               return item[name].pick.map((pick) => {
-                return <div className="pick-change">{pick.index}</div>;
+                return (
+                  <div className="pick-change" key={idx}>
+                    {pick.index}
+                  </div>
+                );
               });
             } 
             return null;
@@ -49,7 +53,7 @@ const ModalResultTeam = ({title='',historyTrades=[],mainTeam={},myTeam={},name='
             ) {
               return item[name].pickYear.map((pick) => {
                 return (
-                  <div name={idx} className="pick-change">
+                  <div  key={idx} className="pick-change">
                     {pick.round}
                   </div>
                 );
@@ -67,7 +71,7 @@ const ModalResultTeam = ({title='',historyTrades=[],mainTeam={},myTeam={},name='
               item.mainTeam.name === mainTeam.name
             ) {
               return (
-                <p name={idx} className="player-name">
+                <p key={idx} className="player-name">
                   <span>{item[name].player?.position} </span>
                   {item[name].player?.player}
                 </p>
